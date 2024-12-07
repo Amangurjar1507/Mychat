@@ -1,9 +1,10 @@
-import {useState} from 'react';
-import {Alert} from 'react-native';
+import {useEffect, useState} from 'react';
+import {Alert, Platform} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import {useNavigation} from '@react-navigation/native';
 import {LoginHooks} from './login.interface';
+import messaging from '@react-native-firebase/messaging';
 
 const loginController = (): LoginHooks => {
   const [email, setEmail] = useState<string>('');
@@ -11,6 +12,31 @@ const loginController = (): LoginHooks => {
   const [visible, setVisible] = useState<boolean>(false);
   const navigation = useNavigation();
 
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground message:', remoteMessage);
+      // Handle the message, show alert, or update UI
+    });
+
+    return unsubscribe;
+  }, []);
+
+  async function requestUserPermission() {
+    const authorizationStatus = await messaging().requestPermission();
+
+    if (authorizationStatus === messaging.AuthorizationStatus.AUTHORIZED) {
+      console.log('Notification permission granted');
+    } else if (
+      authorizationStatus === messaging.AuthorizationStatus.PROVISIONAL
+    ) {
+      console.log('Notification permission provisionally granted');
+    } else {
+      console.log('Notification permission denied');
+    }
+  }
+  if (Platform.OS === 'ios') {
+    requestUserPermission();
+  
   const loginUser = async () => {
     if (!email || !password) {
       Alert.alert('Validation Error', 'Email and password are required.');
