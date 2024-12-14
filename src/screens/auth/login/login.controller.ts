@@ -14,8 +14,7 @@ const loginController = (): LoginHooks => {
 
   useEffect(() => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('Foreground message:', remoteMessage);
-      // Handle the message, show alert, or update UI
+       // Handle the message, show alert, or update UI
     });
 
     return unsubscribe;
